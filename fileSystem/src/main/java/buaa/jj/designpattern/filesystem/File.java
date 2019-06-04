@@ -25,12 +25,12 @@ public abstract class File implements FileSystem {
     }
 
     @Override
-    public FileSystem getFile(Queue<String> path) {
+    public FileSystem getFile(Queue<String> path, String name) {
         throw new RuntimeException();
     }
 
     @Override
-    public void removeFile(Queue<String> path) {
+    public void removeFile(Queue<String> path, String name) {
         throw new RuntimeException();
     }
 
@@ -52,5 +52,15 @@ public abstract class File implements FileSystem {
     @Override
     public Iterator getIterator() {
         return null;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setParent(FileSystem parent) {
+        this.parent = parent;
     }
 }

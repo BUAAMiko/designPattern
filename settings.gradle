@@ -1,1 +1,1 @@
-include ':app', ':fileSystem'
+include ':fileSystem'
