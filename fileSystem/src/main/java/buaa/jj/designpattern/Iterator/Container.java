@@ -1,5 +1,5 @@
 package buaa.jj.designpattern.Iterator;
 
 public interface Container {
-    Iterator getIterator();
+    Iterator getIterator(String type);
 }

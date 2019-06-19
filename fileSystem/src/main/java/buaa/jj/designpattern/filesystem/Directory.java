@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Queue;
 
 import buaa.jj.designpattern.Iterator.Iterator;
+import buaa.jj.designpattern.factory.FileSystemFactory;
 
 public class Directory implements FileSystem {
 
@@ -17,9 +18,14 @@ public class Directory implements FileSystem {
     private class FileSystemIterator implements Iterator {
 
         private Queue<FileSystem> queue = new LinkedList<FileSystem>();
+        private File.Type type;
 
-        public FileSystemIterator(Directory root){
+        public FileSystemIterator(Directory root, String type){
             queue.add(root);
+            if (type != null)
+                this.type = Enum.valueOf(File.Type.class,type);
+            else
+                this.type = null;
         }
 
         @Override
@@ -30,6 +36,13 @@ public class Directory implements FileSystem {
         @Override
         public Object next() {
             FileSystem ret = queue.poll();
+            if (type != null) {
+                while (ret.getClass() == File.class && ((File)ret).getType() != type) {
+                    if (queue.isEmpty())
+                        return null;
+                    ret = queue.poll();
+                }
+            }
             if (ret != null && ret.getChilds() != null)
                 queue.addAll(ret.getChilds());
             return ret;
@@ -64,6 +77,7 @@ public class Directory implements FileSystem {
                 fileSystem.setParent(this);
                 addChild(fileSystem);
             }
+            FileSystemFactory.saveFileSystemChange();
         } else {
             String name = path.poll();
             for (FileSystem child : childs) {
@@ -72,7 +86,8 @@ public class Directory implements FileSystem {
                     return;
                 }
             }
-            FileSystem tmp = new Directory("name",this);
+            FileSystem tmp = new Directory(name,this);
+            tmp.setParent(this);
             tmp.addFile(path,fileSystem);
         }
     }
@@ -81,7 +96,7 @@ public class Directory implements FileSystem {
     public FileSystem getFile(Queue<String> path, String name) {
         if (path.isEmpty()) {
             for (FileSystem child : childs) {
-                if (child.getName() == name)
+                if (child.getName().equals(name))
                     return child;
             }
             return null;
@@ -100,8 +115,11 @@ public class Directory implements FileSystem {
     public void removeFile(Queue<String> path, String name) {
         if (path.isEmpty()) {
             for (FileSystem child : childs) {
-                if (child.getName().equals(name))
+                if (child.getName().equals(name)) {
                     childs.remove(child);
+                    FileSystemFactory.saveFileSystemChange();
+                    return;
+                }
             }
             throw new RuntimeException();
         } else {
@@ -109,6 +127,7 @@ public class Directory implements FileSystem {
             for (FileSystem child : childs) {
                 if (child.getName().equals(s)) {
                     child.removeFile(path,name);
+                    return;
                 }
             }
             throw new RuntimeException();
@@ -140,8 +159,12 @@ public class Directory implements FileSystem {
         return childs;
     }
 
+    public void setChilds(List<FileSystem> childs) {
+        this.childs = childs;
+    }
+
     @Override
-    public Iterator getIterator() {
-        return new FileSystemIterator(this);
+    public Iterator getIterator(String type) {
+        return new FileSystemIterator(this, type);
     }
 }

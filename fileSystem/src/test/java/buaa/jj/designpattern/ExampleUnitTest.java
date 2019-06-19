@@ -6,6 +6,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import buaa.jj.designpattern.factory.FileSystemFactory;
+import buaa.jj.designpattern.filesystem.File;
+import buaa.jj.designpattern.filesystem.FileSystem;
+
 import static org.junit.Assert.*;
 
 /**
@@ -16,10 +20,7 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
-        String path = "/s/asa/txt.sas";
-        LinkedList linkedList = new LinkedList();
-        linkedList.addAll(Arrays.asList(path.split("/")));
-        linkedList.poll();
-        System.out.println(linkedList);
+        FileSystemFactory  factory = new FileSystemFactory();
+        FileSystem fileSystem = factory.getFileSystem("1",true);
     }
 }
