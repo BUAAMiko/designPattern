@@ -2,6 +2,7 @@ package buaa.jj.designpattern.filesystem;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.widget.Button;
 
 import java.util.HashMap;
 import java.util.List;
@@ -223,6 +224,10 @@ public class File implements FileSystem {
     private String suffix;
     private Type type;
 
+    /**
+     * 打开文件，返回一个intent，前端自行调用打开文件
+     * @return 返回intent实例
+     */
     public Intent open() {
         Intent intent = new Intent();
         java.io.File file = new java.io.File(savePath + name);
@@ -232,12 +237,11 @@ public class File implements FileSystem {
         return intent;
     }
 
-    public File(String name, String suffix, Type type) {
-        this.name = name;
-        this.suffix = suffix;
-        this.type = type;
-    }
-
+    /**
+     * 生成一个新的文件实例
+     * @param name 本地文件的文件名
+     * @return 返回文件实例
+     */
     public static File getFile(String name) {
         java.io.File file = new java.io.File(savePath + name);
         String fileName = file.getName();
@@ -274,6 +278,12 @@ public class File implements FileSystem {
                     return new File(name,suffix,Type.Others);
             }
         }
+    }
+
+    public File(String name, String suffix, Type type) {
+        this.name = name;
+        this.suffix = suffix;
+        this.type = type;
     }
 
     @Override

@@ -22,6 +22,12 @@ public class FileSystemFactory {
     private static FileSystem fileSystem;
     private final static String savePath = "/home/jj/file/";
 
+    /**
+     * 获取文件实例
+     * @param userId 当前登录的用户的用户id
+     * @param state 是否要强制重新初始化，或者获取已实例化的对象，推荐切换用户时强制初始化
+     * @return 返回构建好的文件系统实例
+     */
     public FileSystem getFileSystem(String userId, boolean state) {
         if (state || fileSystem == null) {
             fileSystem = new Directory(userId,null);
