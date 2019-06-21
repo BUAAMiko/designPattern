@@ -1,5 +1,7 @@
 package buaa.jj.designpattern.factory;
 
+import android.os.Environment;
+
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -20,7 +22,7 @@ import buaa.jj.designpattern.filesystem.FileSystem;
 public class FileSystemFactory {
 
     private static FileSystem fileSystem;
-    private final static String savePath = "/home/jj/file/";
+    private final static String savePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/chat/";
 
     /**
      * 获取文件实例

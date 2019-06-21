@@ -2,6 +2,7 @@ package buaa.jj.designpattern.filesystem;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Environment;
 import android.widget.Button;
 
 import java.util.HashMap;
@@ -217,7 +218,7 @@ public class File implements FileSystem {
     public enum Type {
         Document,Image, Video,Application,Others
     }
-    private final static String savePath = "/home/jj/file/";
+    private final static String savePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/chat/";
 
     private FileSystem parent;
     private String name;
