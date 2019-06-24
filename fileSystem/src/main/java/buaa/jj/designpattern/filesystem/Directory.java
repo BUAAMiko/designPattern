@@ -32,7 +32,16 @@ public class Directory implements FileSystem {
 
         @Override
         public boolean hasNext() {
-            return !queue.isEmpty();
+            if (type == null)
+                return !queue.isEmpty();
+            else {
+                FileSystem tmp = queue.peek();
+                while (tmp != null && tmp.getClass() == File.class && ((File)tmp).getType() != type) {
+                    queue.poll();
+                    tmp = queue.peek();
+                }
+                return !queue.isEmpty();
+            }
         }
 
         @Override

@@ -1,6 +1,7 @@
 package buaa.jj.designpattern;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -28,12 +29,12 @@ public class ExampleInstrumentedTest {
         Context appContext = InstrumentationRegistry.getTargetContext();
         FileSystemFactory.savePath = appContext.getExternalCacheDir().getAbsolutePath();
         FileSystemFactory factory = new FileSystemFactory();
-        FileSystemFactory.userId = "1";
+        FileSystemFactory.userId = "2";
         FileSystem fileSystem = factory.getFileSystem(true);
         LinkedList linkedList = new LinkedList<String>();
-        linkedList.add("2");
-        fileSystem.addFile(linkedList,File.getFile("text.txt"));
-        fileSystem = factory.getFileSystem(true);
-//        assertEquals("buaa.jj.filesystem.test", appContext.getPackageName());
+        linkedList.add("1");
+//        fileSystem.addFile(linkedList,File.getFile("text.png"));
+        fileSystem = factory.getFileSystem(true).getFile(new LinkedList<String>(),"1");
+        //        assertEquals("buaa.jj.filesystem.test", appContext.getPackageName());
     }
 }
