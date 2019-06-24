@@ -1,5 +1,7 @@
 package buaa.jj.designpattern.filesystem;
 
+import com.google.gson.annotations.Expose;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;

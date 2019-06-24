@@ -2,17 +2,28 @@ package buaa.jj.designpattern.factory;
 
 import android.os.Environment;
 
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.util.CycleDetectionStrategy;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 
 import buaa.jj.designpattern.filesystem.Directory;
@@ -22,18 +33,20 @@ import buaa.jj.designpattern.filesystem.FileSystem;
 public class FileSystemFactory {
 
     private static FileSystem fileSystem;
-    private final static String savePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/chat/";
+    public static String savePath;
+    public static String userId = "";
 
     /**
      * 获取文件实例
-     * @param userId 当前登录的用户的用户id
      * @param state 是否要强制重新初始化，或者获取已实例化的对象，推荐切换用户时强制初始化
      * @return 返回构建好的文件系统实例
      */
-    public FileSystem getFileSystem(String userId, boolean state) {
+    public FileSystem getFileSystem(boolean state) {
         if (state || fileSystem == null) {
+            if (userId.equals(""))
+                throw new RuntimeException();
             fileSystem = new Directory(userId,null);
-            java.io.File file = new java.io.File(savePath + userId);
+            java.io.File file = new java.io.File(savePath + "/" + userId);
             if (file.isFile())
                 file2Object(userId);
             else
@@ -42,8 +55,9 @@ public class FileSystemFactory {
         return fileSystem;
     }
 
-    public void file2Object(String userId) throws JSONException {
-        java.io.File file = new java.io.File(savePath + userId);
+    public void file2Object(String userId) {
+        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        java.io.File file = new java.io.File(savePath + "/" + userId);
         StringBuilder json = new StringBuilder();
         try {
             if (!file.isFile())
@@ -59,37 +73,57 @@ public class FileSystemFactory {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Queue<JSONObject> queue = new LinkedList<JSONObject>(JSONObject.fromObject(json.toString()).getJSONArray("childs"));
+        LinkedList<JsonObject> queue = new LinkedList<JsonObject>();
+        JsonObject jsonObject = new JsonParser().parse(json.toString()).getAsJsonObject();
+        for (JsonElement object : jsonObject.get("childs").getAsJsonArray()) {
+            queue.add(object.getAsJsonObject());
+        }
         LinkedList path = new LinkedList();
         while (!queue.isEmpty()) {
-            JSONObject tmp = queue.poll();
+            JsonObject tmp = queue.poll();
             if (tmp.has("path")) {
-                path = new LinkedList();
-                path.addAll(tmp.getJSONArray("path"));
+                path = new LinkedList<String>();
+                for (JsonElement object : tmp.get("path").getAsJsonArray()) {
+                    path.add(object.getAsString());
+                }
             } else {
                 if (tmp.has("suffix")) {
-                    File tmpfile = new File(tmp.getString("name"),tmp.getString("suffix"),Enum.valueOf(File.Type.class,tmp.getString("type")));
+                    File tmpfile = new File(tmp.get("name").getAsString(),tmp.get("suffix").getAsString(),Enum.valueOf(File.Type.class,tmp.get("type").getAsString()));
                     fileSystem.addFile(path,tmpfile);
                 } else {
-                    path.add(tmp.getString("name"));
-                    JSONObject tmp1 = new JSONObject();
-                    tmp1.put("path",path);
+                    path.add(tmp.get("name").getAsString());
+                    JsonObject tmp1 = new JsonObject();
+                    tmp1.add("path", gson.toJsonTree(path));
                     fileSystem.addFile((Queue<String>) path.clone(),null);
                     path.pollLast();
                     queue.add(tmp1);
-                    queue.addAll(tmp.getJSONArray("childs"));
+                    for (JsonElement object : tmp.get("childs").getAsJsonArray()) {
+                        queue.add(object.getAsJsonObject());
+                    }
                 }
             }
         }
     }
 
     private static void object2File(String userId) {
-        JsonConfig jsonConfig = new JsonConfig();
-        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
-        jsonConfig.setExcludes(new String[]{"parent"});
-        java.io.File file = new java.io.File(savePath + userId);
-        String json = JSONObject.fromObject(fileSystem,jsonConfig).toString();
+        java.io.File file = new java.io.File(savePath + "/" + userId);
+        Gson gson = new GsonBuilder().setExclusionStrategies(new ExclusionStrategy() {
+            @Override
+            public boolean shouldSkipField(FieldAttributes f) {
+                if (f.getName().equals("parent"))
+                    return true;
+                return false;
+            }
+
+            @Override
+            public boolean shouldSkipClass(Class<?> clazz) {
+                return false;
+            }
+        }).create();
+        String json = gson.toJson(fileSystem);
         try {
+            if (!file.isFile())
+                file.createNewFile();
             FileWriter fileWriter = new FileWriter(file);
             fileWriter.write(json);
             fileWriter.close();

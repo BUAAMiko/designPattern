@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.widget.Button;
 
+import com.google.gson.annotations.Expose;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -216,10 +218,11 @@ public class File implements FileSystem {
     }
 
     public enum Type {
-        Document,Image, Video,Application,Others
+        Document,Image, Video,Others
     }
     private final static String savePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/chat/";
 
+    @Expose(serialize = false)
     private FileSystem parent;
     private String name;
     private String suffix;
@@ -266,14 +269,14 @@ public class File implements FileSystem {
                     subtype = type.substring(type.indexOf("/") + 1);
                     switch (subtype) {
                         case "pdf":
-                        case "doc":
-                        case "ppt":
-                        case "e":
+                        case "vnd.ms-excel":
+                        case "msword":
+                        case "vnd.ms-powerpoint":
                             return new File(name,suffix,Type.Document);
                         case "octet-stream":
                             return new File(name,suffix,Type.Others);
                         default:
-                            return new File(name,suffix,Type.Application);
+                            return new File(name,suffix,Type.Others);
                     }
                 default:
                     return new File(name,suffix,Type.Others);
